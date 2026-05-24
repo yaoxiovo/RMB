@@ -1,52 +1,46 @@
-# Yaoxi Ledger - EdgeOne Node Function + DATABASE_URL
+# Yaoxi Ledger - EdgeOne DATABASE_URL 版
 
-这个版本用于解决 EdgeOne 构建卡在 `npm install` 的问题：
+单人账本，静态前端 + EdgeOne Node Functions + PostgreSQL `DATABASE_URL`。
 
-- 移除了 Vite 依赖，构建脚本只复制静态文件到 `dist`。
-- 移除了 `package-lock.json`，避免锁文件里出现不可访问的私有 registry 地址。
-- 新增 `.npmrc` 和 `edgeone.json`，强制使用 `npmmirror` 并关闭 audit/fund/progress。
-- 只保留一个运行时依赖：`pg`，用于 EdgeOne Node Function 连接 PostgreSQL。
+## 功能
 
-## 架构
-
-```txt
-浏览器静态页面
-  -> fetch('/api/entries')
-EdgeOne Node Function
-  -> DATABASE_URL
-Supabase PostgreSQL
-```
+- 微信 / 支付宝 / 银行卡 / 现金 / 其他存款账户
+- 账户余额：初始余额 + 收入 - 支出 + 转入 - 转出
+- 账户转账：不计入收入支出
+- 标签系统：标签表在数据库，前端从数据库读取
+- 每笔流水支持账户、分类、标签、消费评价
+- 本月预算、预警比例、低余额阈值
+- 今日可用额度
+- 今日 / 近 7 日 / 本月统计
+- 固定支出 / 周期账单，执行后生成流水并推进下次日期
+- 删除确认 + 5 秒撤销
+- JSON 导出 / 导入
 
 ## EdgeOne 环境变量
 
-只需要配置：
+只需要一个：
 
 ```env
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
 ```
 
-不要把 DATABASE_URL 放进前端 JS。
+不要把 DATABASE_URL 写进前端源码。
 
 ## EdgeOne 构建配置
-
-项目内已经有 `edgeone.json`，会覆盖控制台构建设置：
-
-```json
-{
-  "installCommand": "npm install --registry=https://registry.npmmirror.com --no-audit --no-fund --progress=false",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
-  "nodeVersion": "22.11.0"
-}
-```
-
-如果控制台没有读取 `edgeone.json`，手动设置：
 
 ```txt
 安装命令：npm install --registry=https://registry.npmmirror.com --no-audit --no-fund --progress=false
 构建命令：npm run build
 输出目录：dist
-Node 版本：22.11.0
+Node 版本：22.11.0 或 22.x
+```
+
+## 数据库
+
+Node Function 首次请求会自动建表和补字段，也可以手动执行：
+
+```txt
+supabase/001_create_ledger_entries_no_auth.sql
 ```
 
 ## 本地测试
@@ -56,16 +50,3 @@ npm install
 npm test
 npm run build
 ```
-
-API：
-
-```txt
-GET    /api/entries
-POST   /api/entries
-DELETE /api/entries?id=<uuid>
-```
-
-
-## 白屏修复说明
-
-本项目是无打包静态构建，浏览器原生 ES Module 不能直接 `import "./styles.css"`。CSS 已改为在 `index.html` 中通过 `<link rel="stylesheet">` 加载，避免线上白屏。
