@@ -58,3 +58,9 @@ const mainSource = await readFile(new URL("../src/main.js", import.meta.url), "u
 const htmlSource = await readFile(new URL("../index.html", import.meta.url), "utf8");
 assert.ok(!mainSource.includes('import "./styles.css"'), "no-bundler build must not import CSS from JS");
 assert.match(htmlSource, /<link\s+rel="stylesheet"\s+href="\.\/src\/styles\.css"\s*\/>/, "index.html should load CSS with a link tag");
+
+const cssSource = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
+assert.ok(!mainSource.includes('class="badge"'), "header badge should be removed");
+assert.ok(!mainSource.includes('${icon("search", "icon")}'), "search field should not render the giant magnifier icon");
+assert.match(cssSource, /\.icon\s*\{[\s\S]*?width:\s*1\.25rem;[\s\S]*?height:\s*1\.25rem;/, "svg icons must have fixed dimensions");
+assert.match(cssSource, /\.header\s*\{[\s\S]*?align-items:\s*flex-start;/, "header cards should not stretch into long vertical strips");

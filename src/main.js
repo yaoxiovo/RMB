@@ -245,7 +245,6 @@ function render() {
       <div class="container">
         <header class="glass header">
           <div>
-            <div class="badge">${icon("shield", "icon small")} Static Frontend · EdgeOne Node Function · DATABASE_URL</div>
             <h1>Yaoxi Ledger</h1>
             <p>静态页面只负责交互；数据库连接串只在 EdgeOne Node Function 中读取。结构接近 Umami：页面请求内部 API，服务端运行时直连 PostgreSQL。</p>
           </div>
@@ -314,7 +313,6 @@ function render() {
             ${panel("流水记录", "筛选、搜索、删除，全部通过数据库 API 完成。", `
               <div class="toolbar">
                 <div class="search-wrap">
-                  ${icon("search", "icon")}
                   <input id="query-input" class="field" value="${escapeHtml(state.query)}" placeholder="搜索标题 / 分类 / 备注" />
                 </div>
                 <div class="filter">

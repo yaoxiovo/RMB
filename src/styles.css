@@ -100,26 +100,28 @@ button:disabled {
 
 .header {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
   border-radius: 2rem;
   padding: 1.25rem;
 }
 
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 999px;
-  border: 1px solid rgba(103, 232, 249, 0.25);
-  background: rgba(103, 232, 249, 0.1);
-  color: #cffafe;
-  font-size: 0.75rem;
+.icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: none;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.icon.small {
+  width: 1rem;
+  height: 1rem;
 }
 
 h1 {
-  margin: 0.75rem 0 0;
+  margin: 0;
   font-size: clamp(2rem, 5vw, 3rem);
   letter-spacing: -0.05em;
 }
@@ -139,8 +141,14 @@ h1 {
 .header-actions {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: stretch;
   gap: 0.75rem;
   min-width: min(100%, 28rem);
+}
+
+.header-actions .btn,
+.header-actions .tiny-card {
+  min-height: 5.4rem;
 }
 
 .tiny-card {
@@ -479,16 +487,8 @@ select:focus {
   flex: 1;
 }
 
-.search-wrap .icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #64748b;
-}
-
 .search-wrap input {
-  padding-left: 2.8rem;
+  padding-left: 1rem;
 }
 
 .filter {
