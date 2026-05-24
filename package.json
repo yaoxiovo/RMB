@@ -1,5 +1,5 @@
 {
-  "name": "yaoxi-ledger-static",
+  "name": "yaoxi-ledger-edgeone-db",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -10,8 +10,9 @@
     "test": "node test/utils.test.mjs"
   },
   "dependencies": {
-    "@supabase/supabase-js": "latest",
-    "vite": "latest"
+    "@vitejs/plugin-legacy": "latest",
+    "vite": "latest",
+    "pg": "latest"
   },
   "devDependencies": {}
 }

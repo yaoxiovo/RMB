@@ -1,59 +1,53 @@
 import assert from "node:assert/strict";
 import {
+  byCategory,
+  calculateStats,
   daysUntil,
-  fromDatabase,
-  getCategoryRank,
-  getRecentTrend,
-  summarizeStats,
+  escapeHtml,
+  formatMoney,
+  normalizeEntry,
   todayISO,
-  toDatabase,
+  trend7Days,
 } from "../src/utils.js";
 
-const mapped = fromDatabase({
-  id: "1",
+const records = [
+  { id: "1", type: "income", title: "收入", amount: 100, category: "收入", date: "2026-05-24", note: "" },
+  { id: "2", type: "expense", title: "午饭", amount: 18.5, category: "餐饮", date: "2026-05-24", note: "" },
+  { id: "3", type: "expense", title: "练习册", amount: 32, category: "学习", date: "2026-05-23", note: "" },
+];
+
+assert.equal(daysUntil(new Date(2026, 5, 30), new Date(2026, 4, 24)), 37);
+assert.equal(todayISO(new Date("2026-05-24T12:00:00")), "2026-05-24");
+assert.ok(formatMoney(1.5).includes("1.5"));
+
+const stats = calculateStats(records);
+assert.equal(stats.income, 100);
+assert.equal(stats.expense, 50.5);
+assert.equal(stats.balance, 49.5);
+assert.equal(stats.avgExpense, 25.25);
+
+const categories = byCategory(records);
+assert.equal(categories[0].name, "学习");
+assert.equal(categories[0].value, 32);
+assert.equal(categories[1].name, "餐饮");
+
+const trend = trend7Days(records, new Date("2026-05-24T12:00:00"));
+assert.equal(trend.length, 7);
+assert.equal(trend.at(-1).expense, 18.5);
+
+const normalized = normalizeEntry({
+  id: 123,
   type: "expense",
-  title: "练习册",
+  title: "x",
   amount: "12.50",
-  category: "学习",
+  category: "其他",
   entry_date: "2026-05-24",
   note: null,
 });
+assert.equal(normalized.id, "123");
+assert.equal(normalized.amount, 12.5);
+assert.equal(normalized.date, "2026-05-24");
+assert.equal(normalized.note, "");
 
-assert.equal(mapped.amount, 12.5);
-assert.equal(mapped.note, "");
-assert.equal(mapped.date, "2026-05-24");
-
-const dbRow = toDatabase(mapped, "user-1");
-assert.equal(dbRow.user_id, "user-1");
-assert.equal(dbRow.entry_date, "2026-05-24");
-assert.equal(dbRow.amount, 12.5);
-
-assert.equal(daysUntil(new Date(2026, 5, 30), new Date(2026, 4, 24)), 37);
-assert.equal(daysUntil(new Date(2026, 5, 30), new Date(2026, 6, 1)), 0);
-assert.equal(todayISO(new Date("2026-05-24T12:00:00")), "2026-05-24");
-
-const records = [
-  { type: "income", amount: 100, category: "收入", date: "2026-05-24" },
-  { type: "expense", amount: 20, category: "餐饮", date: "2026-05-24" },
-  { type: "expense", amount: 30, category: "学习", date: "2026-05-24" },
-  { type: "expense", amount: 10, category: "餐饮", date: "2026-05-23" },
-];
-
-assert.deepEqual(summarizeStats(records), {
-  income: 100,
-  expense: 60,
-  balance: 40,
-  avgExpense: 20,
-});
-
-const rank = getCategoryRank(records);
-assert.equal(rank[0].name, "餐饮");
-assert.equal(rank[0].value, 30);
-assert.equal(rank[0].percent, 100);
-
-const trend = getRecentTrend(records, new Date("2026-05-24T00:00:00"));
-assert.equal(trend.length, 7);
-assert.equal(trend.at(-1).expense, 50);
-assert.equal(trend.at(-2).expense, 10);
-
+assert.equal(escapeHtml('<script>alert("x")</script>'), "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;");
 console.log("All utility tests passed.");
