@@ -1,18 +1,17 @@
 {
   "name": "yaoxi-ledger-edgeone-db",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "vite build",
-    "preview": "vite preview --host 0.0.0.0",
-    "test": "node test/utils.test.mjs"
+    "build": "node scripts/build.mjs",
+    "test": "node test/utils.test.mjs",
+    "dev": "npx serve dist"
   },
   "dependencies": {
-    "@vitejs/plugin-legacy": "latest",
-    "vite": "latest",
-    "pg": "latest"
+    "pg": "^8.13.1"
   },
-  "devDependencies": {}
+  "engines": {
+    "node": ">=20"
+  }
 }

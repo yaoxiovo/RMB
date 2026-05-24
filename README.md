@@ -1,81 +1,66 @@
-# Yaoxi Ledger - EdgeOne DATABASE_URL Version
+# Yaoxi Ledger - EdgeOne Node Function + DATABASE_URL
 
-这是一个静态前端 + EdgeOne Node Function + PostgreSQL 的记账本。
+这个版本用于解决 EdgeOne 构建卡在 `npm install` 的问题：
 
-架构接近 Umami：
+- 移除了 Vite 依赖，构建脚本只复制静态文件到 `dist`。
+- 移除了 `package-lock.json`，避免锁文件里出现不可访问的私有 registry 地址。
+- 新增 `.npmrc` 和 `edgeone.json`，强制使用 `npmmirror` 并关闭 audit/fund/progress。
+- 只保留一个运行时依赖：`pg`，用于 EdgeOne Node Function 连接 PostgreSQL。
+
+## 架构
 
 ```txt
 浏览器静态页面
-  -> /api/entries
+  -> fetch('/api/entries')
 EdgeOne Node Function
   -> DATABASE_URL
 Supabase PostgreSQL
 ```
 
-前端不读取 `DATABASE_URL`。数据库连接串只放在 EdgeOne 项目设置的环境变量中。
-
 ## EdgeOne 环境变量
 
-在 EdgeOne 控制台：项目设置 -> 环境变量，新增：
+只需要配置：
 
 ```env
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:PORT/DATABASE?sslmode=require
 ```
 
-Supabase 的 Transaction pooler URI 可以用。Node Function 内部使用 `pg` 连接 PostgreSQL。
+不要把 DATABASE_URL 放进前端 JS。
 
 ## EdgeOne 构建配置
 
+项目内已经有 `edgeone.json`，会覆盖控制台构建设置：
+
+```json
+{
+  "installCommand": "npm install --registry=https://registry.npmmirror.com --no-audit --no-fund --progress=false",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "nodeVersion": "22.11.0"
+}
+```
+
+如果控制台没有读取 `edgeone.json`，手动设置：
+
 ```txt
-安装命令：npm install
+安装命令：npm install --registry=https://registry.npmmirror.com --no-audit --no-fund --progress=false
 构建命令：npm run build
 输出目录：dist
+Node 版本：22.11.0
 ```
 
-函数目录：
+## 本地测试
 
-```txt
-node-functions/api/entries.js
+```bash
+npm install
+npm test
+npm run build
 ```
 
-部署后接口为：
+API：
 
 ```txt
 GET    /api/entries
 POST   /api/entries
 DELETE /api/entries?id=<uuid>
 ```
-
-## 本地开发
-
-前端预览：
-
-```bash
-npm install
-npm run dev
-```
-
-如果要本地完整调试 Node Function，请使用 EdgeOne CLI：
-
-```bash
-npm install -g edgeone
-edgeone pages dev
-```
-
-## 测试
-
-```bash
-npm test
-```
-
-## 数据库表
-
-函数首次请求会自动创建 `public.ledger_entries` 表。你也可以手动执行：
-
-```txt
-supabase/001_create_ledger_entries_no_auth.sql
-```
-
-## 说明
-
-这是单人账本，无登录、无 RLS 用户隔离。只要页面公开访问，别人理论上也能调用 `/api/entries` 操作数据。你要求的是“暴力改动”，所以这里没有加认证。
