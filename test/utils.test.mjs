@@ -51,3 +51,10 @@ assert.equal(normalized.note, "");
 
 assert.equal(escapeHtml('<script>alert("x")</script>'), "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;");
 console.log("All utility tests passed.");
+
+import { readFile } from "node:fs/promises";
+
+const mainSource = await readFile(new URL("../src/main.js", import.meta.url), "utf8");
+const htmlSource = await readFile(new URL("../index.html", import.meta.url), "utf8");
+assert.ok(!mainSource.includes('import "./styles.css"'), "no-bundler build must not import CSS from JS");
+assert.match(htmlSource, /<link\s+rel="stylesheet"\s+href="\.\/src\/styles\.css"\s*\/>/, "index.html should load CSS with a link tag");

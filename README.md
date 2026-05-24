@@ -64,3 +64,8 @@ GET    /api/entries
 POST   /api/entries
 DELETE /api/entries?id=<uuid>
 ```
+
+
+## 白屏修复说明
+
+本项目是无打包静态构建，浏览器原生 ES Module 不能直接 `import "./styles.css"`。CSS 已改为在 `index.html` 中通过 `<link rel="stylesheet">` 加载，避免线上白屏。
