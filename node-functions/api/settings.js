@@ -1,0 +1,2 @@
+import { json, body, db, schema } from '../_lib/db.js';
+export async function onRequestPost({ request, context }){try{await schema(context);const d=await body(request);const value={monthlyBudget:Number(d.monthlyBudget||0),alertPercent:Number(d.alertPercent||80),lowBalanceThreshold:Number(d.lowBalanceThreshold||0)};await db(context).query(`insert into ledger_settings(key,value,updated_at) values('budget',$1,now()) on conflict(key) do update set value=excluded.value,updated_at=now()`,[value]);return json({ok:true})}catch(e){return json({error:e.message},400)}}

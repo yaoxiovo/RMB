@@ -1,0 +1,3 @@
+import { json, body, db, schema } from '../_lib/db.js';
+export async function onRequestPost({ request, context }){try{await schema(context);const d=await body(request);await db(context).query('insert into ledger_transfers(from_account_id,to_account_id,amount,transfer_date,note) values($1,$2,$3,$4,$5)',[d.from_account_id,d.to_account_id,Number(d.amount),d.transfer_date,d.note||'']);return json({ok:true})}catch(e){return json({error:e.message},400)}}
+export async function onRequestDelete({ request, context }){try{await schema(context);const id=new URL(request.url).searchParams.get('id');await db(context).query('delete from ledger_transfers where id=$1',[id]);return json({ok:true})}catch(e){return json({error:e.message},500)}}

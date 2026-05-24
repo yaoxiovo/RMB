@@ -1,66 +1,27 @@
-import assert from "node:assert/strict";
-import {
-  byCategory,
-  calculateStats,
-  daysUntil,
-  escapeHtml,
-  formatMoney,
-  normalizeEntry,
-  todayISO,
-  trend7Days,
-} from "../src/utils.js";
-
-const records = [
-  { id: "1", type: "income", title: "收入", amount: 100, category: "收入", date: "2026-05-24", note: "" },
-  { id: "2", type: "expense", title: "午饭", amount: 18.5, category: "餐饮", date: "2026-05-24", note: "" },
-  { id: "3", type: "expense", title: "练习册", amount: 32, category: "学习", date: "2026-05-23", note: "" },
-];
-
-assert.equal(daysUntil(new Date(2026, 5, 30), new Date(2026, 4, 24)), 37);
-assert.equal(todayISO(new Date("2026-05-24T12:00:00")), "2026-05-24");
-assert.ok(formatMoney(1.5).includes("1.5"));
-
-const stats = calculateStats(records);
-assert.equal(stats.income, 100);
-assert.equal(stats.expense, 50.5);
-assert.equal(stats.balance, 49.5);
-assert.equal(stats.avgExpense, 25.25);
-
-const categories = byCategory(records);
-assert.equal(categories[0].name, "学习");
-assert.equal(categories[0].value, 32);
-assert.equal(categories[1].name, "餐饮");
-
-const trend = trend7Days(records, new Date("2026-05-24T12:00:00"));
-assert.equal(trend.length, 7);
-assert.equal(trend.at(-1).expense, 18.5);
-
-const normalized = normalizeEntry({
-  id: 123,
-  type: "expense",
-  title: "x",
-  amount: "12.50",
-  category: "其他",
-  entry_date: "2026-05-24",
-  note: null,
-});
-assert.equal(normalized.id, "123");
-assert.equal(normalized.amount, 12.5);
-assert.equal(normalized.date, "2026-05-24");
-assert.equal(normalized.note, "");
-
-assert.equal(escapeHtml('<script>alert("x")</script>'), "&lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;");
-console.log("All utility tests passed.");
-
-import { readFile } from "node:fs/promises";
-
-const mainSource = await readFile(new URL("../src/main.js", import.meta.url), "utf8");
-const htmlSource = await readFile(new URL("../index.html", import.meta.url), "utf8");
-assert.ok(!mainSource.includes('import "./styles.css"'), "no-bundler build must not import CSS from JS");
-assert.match(htmlSource, /<link\s+rel="stylesheet"\s+href="\.\/src\/styles\.css"\s*\/>/, "index.html should load CSS with a link tag");
-
-const cssSource = await readFile(new URL("../src/styles.css", import.meta.url), "utf8");
-assert.ok(!mainSource.includes('class="badge"'), "header badge should be removed");
-assert.ok(!mainSource.includes('${icon("search", "icon")}'), "search field should not render the giant magnifier icon");
-assert.match(cssSource, /\.icon\s*\{[\s\S]*?width:\s*1\.25rem;[\s\S]*?height:\s*1\.25rem;/, "svg icons must have fixed dimensions");
-assert.match(cssSource, /\.header\s*\{[\s\S]*?align-items:\s*flex-start;/, "header cards should not stretch into long vertical strips");
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { CATEGORIES, RATINGS, daysUntil, todayISO, money, calc, budgetState, byCategory, trend7 } from '../src/utils.js';
+assert.ok(CATEGORIES.includes('餐饮'));
+assert.ok(RATINGS.includes('后悔'));
+assert.equal(daysUntil(new Date(2026,5,30), new Date(2026,4,24)), 37);
+assert.equal(todayISO(new Date('2026-05-24T12:00:00')), '2026-05-24');
+assert.ok(money(1.5).includes('1.5'));
+const entries=[{type:'income',amount:100,account_id:'a',entry_date:'2026-05-24'},{type:'expense',amount:10,category:'餐饮',account_id:'a',entry_date:todayISO()}];
+const accounts=[{id:'a',name:'微信',opening_balance:20}];
+const out=calc(entries,accounts,[]);
+assert.equal(out.stats.income,100);
+assert.equal(out.stats.expense,10);
+assert.equal(out.accounts[0].balance,110);
+assert.equal(byCategory(entries)[0].name,'餐饮');
+assert.equal(trend7(entries).length,7);
+assert.equal(budgetState({monthlyBudget:100,alertPercent:80},90).status,'warn');
+const main=await readFile(new URL('../src/main.js', import.meta.url),'utf8');
+const css=await readFile(new URL('../src/styles.css', import.meta.url),'utf8');
+const db=await readFile(new URL('../node-functions/_lib/db.js', import.meta.url),'utf8');
+assert.ok(!main.includes('import "./styles.css"'));
+assert.match(css,/\.icon\{width:1\.25rem;height:1\.25rem\}/);
+assert.match(css,/align-items:flex-start/);
+assert.match(db,/ledger_tags/);
+assert.match(db,/ledger_accounts/);
+assert.match(db,/ledger_recurring_bills/);
+console.log('All tests passed.');

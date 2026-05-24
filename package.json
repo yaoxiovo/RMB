@@ -1,6 +1,6 @@
 {
-  "name": "yaoxi-ledger-edgeone-db",
-  "version": "1.0.2",
+  "name": "rmb-ledger",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {

@@ -1,18 +1,9 @@
--- Optional: the EdgeOne Node Function will also create this table automatically on first request.
--- This version is intentionally single-user / no-auth, matching the requested Umami-style DATABASE_URL setup.
-
+-- Optional migration. Node Functions also create these tables automatically.
 create extension if not exists pgcrypto;
-
-create table if not exists public.ledger_entries (
-  id uuid primary key default gen_random_uuid(),
-  type text not null check (type in ('income', 'expense')),
-  title text not null,
-  amount numeric(12, 2) not null check (amount > 0),
-  category text not null,
-  entry_date date not null,
-  note text default '',
-  inserted_at timestamptz not null default now()
-);
-
-create index if not exists ledger_entries_entry_date_idx
-  on public.ledger_entries (entry_date desc, inserted_at desc);
+create table if not exists ledger_accounts(id uuid primary key default gen_random_uuid(),name text not null unique,kind text not null default 'asset',opening_balance numeric(12,2) not null default 0,sort_order int not null default 100,is_archived boolean not null default false,inserted_at timestamptz not null default now());
+create table if not exists ledger_tags(id uuid primary key default gen_random_uuid(),name text not null unique,color text not null default '#67e8f9',inserted_at timestamptz not null default now());
+create table if not exists ledger_entries(id uuid primary key default gen_random_uuid(),type text not null check(type in('income','expense')),title text not null,amount numeric(12,2) not null check(amount>0),category text not null,account_id uuid references ledger_accounts(id) on delete set null,rating text not null default '可接受',entry_date date not null,note text default '',inserted_at timestamptz not null default now());
+create table if not exists ledger_entry_tags(entry_id uuid not null references ledger_entries(id) on delete cascade,tag_id uuid not null references ledger_tags(id) on delete cascade,primary key(entry_id,tag_id));
+create table if not exists ledger_transfers(id uuid primary key default gen_random_uuid(),from_account_id uuid not null references ledger_accounts(id),to_account_id uuid not null references ledger_accounts(id),amount numeric(12,2) not null check(amount>0),transfer_date date not null,note text default '',inserted_at timestamptz not null default now(),check(from_account_id<>to_account_id));
+create table if not exists ledger_settings(key text primary key,value jsonb not null,updated_at timestamptz not null default now());
+create table if not exists ledger_recurring_bills(id uuid primary key default gen_random_uuid(),title text not null,type text not null check(type in('income','expense')),amount numeric(12,2) not null check(amount>0),category text not null,account_id uuid references ledger_accounts(id) on delete set null,interval_kind text not null default 'monthly' check(interval_kind in('daily','weekly','monthly')),next_date date not null,note text default '',is_active boolean not null default true,inserted_at timestamptz not null default now());

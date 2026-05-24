@@ -1,0 +1,4 @@
+import { json, body, db, schema, tag } from '../_lib/db.js';
+export async function onRequestGet({ context }){try{await schema(context);const {rows}=await db(context).query('select * from ledger_tags order by inserted_at');return json({tags:rows.map(tag)})}catch(e){return json({error:e.message},500)}}
+export async function onRequestPost({ request, context }){try{await schema(context);const d=await body(request);await db(context).query('insert into ledger_tags(name,color) values($1,$2) on conflict(name) do update set color=excluded.color',[d.name,d.color||'#67e8f9']);return json({ok:true})}catch(e){return json({error:e.message},400)}}
+export async function onRequestDelete({ request, context }){try{await schema(context);const id=new URL(request.url).searchParams.get('id');await db(context).query('delete from ledger_tags where id=$1',[id]);return json({ok:true})}catch(e){return json({error:e.message},500)}}
