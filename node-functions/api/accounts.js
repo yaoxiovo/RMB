@@ -1,4 +1,0 @@
-import { json, body, db, schema, accountsQuery } from '../_lib/db.js';
-export async function onRequestGet({ context }){try{await schema(context);return json({accounts:await accountsQuery(db(context))})}catch(e){return json({error:e.message},500)}}
-export async function onRequestPost({ request, context }){try{await schema(context);const d=await body(request);await db(context).query('insert into ledger_accounts(name,opening_balance,sort_order) values($1,$2,100) on conflict(name) do update set opening_balance=excluded.opening_balance',[d.name,Number(d.opening_balance||0)]);return json({ok:true})}catch(e){return json({error:e.message},400)}}
-export async function onRequestDelete({ request, context }){try{await schema(context);const id=new URL(request.url).searchParams.get('id');await db(context).query('update ledger_accounts set is_archived=true where id=$1',[id]);return json({ok:true})}catch(e){return json({error:e.message},500)}}
