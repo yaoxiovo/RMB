@@ -1,0 +1,17 @@
+{
+  "name": "rmb-ledger",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node test/utils.test.mjs",
+    "dev": "npx serve dist"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
